@@ -6,10 +6,10 @@
 
 (defn handler
   [status-fn]
-    (proxy [HttpHandler] []
-      (handle [^HttpExchange t]
-        (let [{:keys [status body]} (status-fn)
-              payload (.getBytes body "UTF-8")]
+  (proxy [HttpHandler] []
+    (handle [^HttpExchange t]
+      (let [{:keys [status body]} (status-fn)
+            payload (.getBytes body "UTF-8")]
         (.sendResponseHeaders t status (count payload))
         (doto (.getResponseBody t)
           (.write payload)
