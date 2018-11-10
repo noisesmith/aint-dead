@@ -5,22 +5,28 @@
                                    HttpServer)))
 
 (defn handler
-  [string]
-  (let [payload (.getBytes string "UTF-8")]
+  [status-fn]
     (proxy [HttpHandler] []
-      (handle [this ^HttpExchange t]
-        (.sendResponseHeaders t 200 (count payload))
+      (handle [^HttpExchange t]
+        (let [{:keys [status body]} (status-fn)
+              payload (.getBytes body "UTF-8")]
+        (.sendResponseHeaders t status (count payload))
         (doto (.getResponseBody t)
           (.write payload)
           (.close))
         nil))))
 
 (defn yet
-  "antent ded
-  -- granny weatherwax"
-  []
-  (let [server (HttpServer/create (InetSocketAddress. 8000) 0)]
+  "I ATEN'T DEAD
+  -- Granny Weatherwax
+
+  port - a port number to server from
+  path - the route to serve on that port
+  status-fn - should return a hash-map of {:status Long :body String}"
+  [port path status-fn]
+  (let [server (HttpServer/create (InetSocketAddress. port) 0)
+        handle (handler status-fn)]
     (doto server
-      (.createContext "/foo" (handler "Hi.\n"))
+      (.createContext path handle)
       (.setExecutor nil)
       (.start))))
